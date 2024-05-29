@@ -1,6 +1,7 @@
 package org.jmt.mcmt.asmdest;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -8,6 +9,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.BooleanSupplier;
 
+import net.minecraft.core.registries.Registries;
+import net.minecraft.server.level.ChunkMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jmt.mcmt.config.GeneralConfig;
@@ -26,6 +29,8 @@ import net.minecraft.world.level.chunk.EmptyLevelChunk;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.ProtoChunk;
 import net.minecraft.world.level.chunk.storage.ChunkSerializer;
+
+import javax.management.ReflectionException;
 
 /* 1.15.2 code; AKA the only thing that changed  
 import net.minecraft.world.biome.provider.SingleBiomeProviderSettings;
@@ -84,20 +89,23 @@ public class DebugHookTerminator {
 					bypassLoadTarget = true;
 					if (GeneralConfig.enableTimeoutRegen || GeneralConfig.enableBlankReturn) {
 						if (GeneralConfig.enableBlankReturn) {
-							Registry<Biome> biomeRegistry = scp.getLevel().registryAccess().registryOrThrow(Registry.BIOME_REGISTRY);
+							Registry<Biome> biomeRegistry = scp.getLevel().registryAccess().registryOrThrow(Registries.BIOME);
 							LevelChunk out = new EmptyLevelChunk(scp.getLevel(), new ChunkPos(chunkpos), biomeRegistry.getHolder(0).get()); 
 							completableFuture.complete(Either.left(out));
 						} else {
-							try {
-								CompoundTag cnbt = scp.chunkMap.readChunk(new ChunkPos(chunkpos));
-								if (cnbt != null) {
-									ProtoChunk cp = ChunkSerializer.read(scp.level, scp.getPoiManager(), new ChunkPos(chunkpos), cnbt);
-									completableFuture.complete(Either.left(new LevelChunk(scp.level, cp, null)));
-								}
-							} catch (IOException e) {
-								e.printStackTrace();
-							}
-							completableFuture.complete(ChunkHolder.UNLOADED_CHUNK);
+                            CompoundTag cnbt;
+                            try {
+                                Method method = ChunkMap.class.getDeclaredMethod("readChunk", ChunkPos.class);
+                                method.setAccessible(true);
+                                cnbt = (CompoundTag) method.invoke(scp.chunkMap, new ChunkPos(chunkpos));
+                            } catch (ReflectiveOperationException e) {
+                                throw new RuntimeException(e);
+                            }
+                            if (cnbt != null) {
+                                ProtoChunk cp = ChunkSerializer.read(scp.level, scp.getPoiManager(), new ChunkPos(chunkpos), cnbt);
+                                completableFuture.complete(Either.left(new LevelChunk(scp.level, cp, null)));
+                            }
+                            completableFuture.complete(ChunkHolder.UNLOADED_CHUNK);
 						}
 					} else {
 						System.err.println(completableFuture.toString());
