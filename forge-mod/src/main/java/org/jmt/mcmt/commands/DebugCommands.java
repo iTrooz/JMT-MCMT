@@ -135,54 +135,54 @@ public class DebugCommands {
 					UUID id = p.getUUID();
 					int index = structureIdx.computeIfAbsent(id.toString(), (s) -> new AtomicInteger())
 							.getAndIncrement();
-					Registry<ConfiguredStructureFeature<?, ?>> registry = cmdCtx.getSource().getLevel().registryAccess()
-							.registryOrThrow(Registry.CONFIGURED_STRUCTURE_FEATURE_REGISTRY);
-					List<Holder.Reference<ConfiguredStructureFeature<?, ?>>> targets = registry.holders()
-							.collect(Collectors.toUnmodifiableList());
-					Holder.Reference<ConfiguredStructureFeature<?, ?>> target = null;
-					if (index >= targets.size()) {
-						target = targets.get(0);
-						structureIdx.computeIfAbsent(id.toString(), (s) -> new AtomicInteger()).set(0);
-					} else {
-						target = targets.get(index);
-					}
-					Pair<BlockPos, Holder<ConfiguredStructureFeature<?, ?>>> dst = cmdCtx.getSource().getLevel()
-							.getChunkSource().getGenerator().findNearestMapFeature(cmdCtx.getSource().getLevel(),
-									HolderSet.direct(target), srcpos, 100, false);
-					if (dst == null) {
-						Component message = Component.literal(
-								"Failed locating " + target.key().location() + " from " + srcpos);
-						cmdCtx.getSource().sendSuccess(() -> message, true);
-						return 1;
-					}
-					Component message = Component.literal("Found target; loading now");
-					cmdCtx.getSource().sendSuccess(() -> message, true);
-					p.teleportTo(dst.getFirst().getX(), srcpos.getY(), dst.getFirst().getZ());
-					Holder.Reference<ConfiguredStructureFeature<?, ?>> targetf = target;
-
-					ResourceOrTagLocationArgument.Result<ConfiguredStructureFeature<?, ?>> thing = new Result<ConfiguredStructureFeature<?, ?>>() {
-
-						@Override
-						public boolean test(Holder<ConfiguredStructureFeature<?, ?>> t) {
-							return false;
-						}
-
-						@Override
-						public Either<ResourceKey<ConfiguredStructureFeature<?, ?>>, TagKey<ConfiguredStructureFeature<?, ?>>> unwrap() {
-							return Either.left(targetf.key());
-						}
-
-						@Override
-						public <E> Optional<Result<E>> cast(ResourceKey<? extends Registry<E>> p_210997_) {
-							return Optional.empty();
-						}
-
-						@Override
-						public String asPrintable() {
-							return null;
-						}
-					};
-					LocateCommand.showLocateResult(cmdCtx.getSource(), thing, srcpos, dst, "commands.locate.success");
+//					Registry<ConfiguredStructureFeature<?, ?>> registry = cmdCtx.getSource().getLevel().registryAccess()
+//							.registryOrThrow(Registry.CONFIGURED_STRUCTURE_FEATURE_REGISTRY);
+//					List<Holder.Reference<ConfiguredStructureFeature<?, ?>>> targets = registry.holders()
+//							.collect(Collectors.toUnmodifiableList());
+//					Holder.Reference<ConfiguredStructureFeature<?, ?>> target = null;
+//					if (index >= targets.size()) {
+//						target = targets.get(0);
+//						structureIdx.computeIfAbsent(id.toString(), (s) -> new AtomicInteger()).set(0);
+//					} else {
+//						target = targets.get(index);
+//					}
+//					Pair<BlockPos, Holder<ConfiguredStructureFeature<?, ?>>> dst = cmdCtx.getSource().getLevel()
+//							.getChunkSource().getGenerator().findNearestMapFeature(cmdCtx.getSource().getLevel(),
+//									HolderSet.direct(target), srcpos, 100, false);
+//					if (dst == null) {
+//						Component message = Component.literal(
+//								"Failed locating " + target.key().location() + " from " + srcpos);
+//						cmdCtx.getSource().sendSuccess(() -> message, true);
+//						return 1;
+//					}
+//					Component message = Component.literal("Found target; loading now");
+//					cmdCtx.getSource().sendSuccess(() -> message, true);
+//					p.teleportTo(dst.getFirst().getX(), srcpos.getY(), dst.getFirst().getZ());
+//					Holder.Reference<ConfiguredStructureFeature<?, ?>> targetf = target;
+//
+//					ResourceOrTagLocationArgument.Result<ConfiguredStructureFeature<?, ?>> thing = new Result<ConfiguredStructureFeature<?, ?>>() {
+//
+//						@Override
+//						public boolean test(Holder<ConfiguredStructureFeature<?, ?>> t) {
+//							return false;
+//						}
+//
+//						@Override
+//						public Either<ResourceKey<ConfiguredStructureFeature<?, ?>>, TagKey<ConfiguredStructureFeature<?, ?>>> unwrap() {
+//							return Either.left(targetf.key());
+//						}
+//
+//						@Override
+//						public <E> Optional<Result<E>> cast(ResourceKey<? extends Registry<E>> p_210997_) {
+//							return Optional.empty();
+//						}
+//
+//						@Override
+//						public String asPrintable() {
+//							return null;
+//						}
+//					};
+//					LocateCommand.showLocateResult(cmdCtx.getSource(), thing, srcpos, dst, "commands.locate.success");
 					return 1;
 				})))
 		/* */
