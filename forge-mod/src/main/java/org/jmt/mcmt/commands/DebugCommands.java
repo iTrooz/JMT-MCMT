@@ -21,8 +21,6 @@ import com.mojang.datafixers.util.Pair;
 
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.commands.arguments.ResourceOrTagLocationArgument;
-import net.minecraft.commands.arguments.ResourceOrTagLocationArgument.Result;
 import net.minecraft.commands.arguments.coordinates.Coordinates;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 import net.minecraft.core.BlockPos;
@@ -32,7 +30,6 @@ import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.commands.LocateCommand;
 import net.minecraft.server.level.ServerLevel;
@@ -41,7 +38,6 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.TickingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.ConfiguredStructureFeature;
 
 public class DebugCommands {
 
@@ -53,9 +49,9 @@ public class DebugCommands {
 					BlockPos bp = loc.getBlockPos(cmdCtx.getSource());
 					ServerLevel sw = cmdCtx.getSource().getLevel();
 					BlockState bs = sw.getBlockState(bp);
-					TextComponent message = new TextComponent(
-							"Block at " + bp + " is " + bs.getBlock().getRegistryName());
-					cmdCtx.getSource().sendSuccess(message, true);
+					Component message = Component.literal(
+							"Block at " + bp + " is " + bs.getBlock().getName());
+					cmdCtx.getSource().sendSuccess(() -> message, true);
 					System.out.println(message.toString());
 					return 1;
 				}))).then(Commands.literal("nbtdump")
@@ -66,16 +62,16 @@ public class DebugCommands {
 							BlockState bs = sw.getBlockState(bp);
 							BlockEntity te = sw.getBlockEntity(bp);
 							if (te == null) {
-								TextComponent message = new TextComponent(
-										"Block at " + bp + " is " + bs.getBlock().getRegistryName() + " has no NBT");
-								cmdCtx.getSource().sendSuccess(message, true);
+								Component message = Component.literal(
+										"Block at " + bp + " is " + bs.getBlock().getName() + " has no NBT");
+								cmdCtx.getSource().sendSuccess(() -> message, true);
 							}
 							CompoundTag nbt = te.serializeNBT();
 							Component itc = NbtUtils.toPrettyComponent(nbt);
-							TextComponent message = new TextComponent(
-									"Block at " + bp + " is " + bs.getBlock().getRegistryName() + " with TE NBT:");
-							cmdCtx.getSource().sendSuccess(message, true);
-							cmdCtx.getSource().sendSuccess(itc, true);
+							Component message = Component.literal(
+									"Block at " + bp + " is " + bs.getBlock().getName() + " with TE NBT:");
+							cmdCtx.getSource().sendSuccess(() -> message, true);
+							cmdCtx.getSource().sendSuccess(() -> itc, true);
 							// System.out.println(message.toString());
 							return 1;
 						})))
@@ -89,11 +85,11 @@ public class DebugCommands {
 							BlockEntity te = sw.getBlockEntity(bp);
 							if (te instanceof TickingBlockEntity) {
 								((TickingBlockEntity) te).tick();
-								TextComponent message = new TextComponent(
+								Component message = Component.literal(
 										"Ticked " + te.getClass().getName() + " at " + bp);
-								cmdCtx.getSource().sendSuccess(message, true);
+								cmdCtx.getSource().sendSuccess(() -> message, true);
 							} else {
-								TextComponent message = new TextComponent("No tickable TE at " + bp);
+								Component message = Component.literal("No tickable TE at " + bp);
 								cmdCtx.getSource().sendFailure(message);
 							}
 							return 1;
@@ -124,9 +120,9 @@ public class DebugCommands {
 						}
 					});
 
-					TextComponent message = new TextComponent(
-							"Classpath Dumped to: " + base.toAbsolutePath().toString());
-					cmdCtx.getSource().sendSuccess(message, true);
+					Component message = Component.literal(
+							"Classpath Dumped to: " + base.toAbsolutePath());
+					cmdCtx.getSource().sendSuccess(() -> message, true);
 					System.out.println(message.toString());
 					return 1;
 				}))
@@ -154,15 +150,16 @@ public class DebugCommands {
 							.getChunkSource().getGenerator().findNearestMapFeature(cmdCtx.getSource().getLevel(),
 									HolderSet.direct(target), srcpos, 100, false);
 					if (dst == null) {
-						TextComponent message = new TextComponent(
-								"Failed locating " + target.key().location().toString() + " from " + srcpos);
-						cmdCtx.getSource().sendSuccess(message, true);
+						Component message = Component.literal(
+								"Failed locating " + target.key().location() + " from " + srcpos);
+						cmdCtx.getSource().sendSuccess(() -> message, true);
 						return 1;
 					}
-					TextComponent message = new TextComponent("Found target; loading now");
-					cmdCtx.getSource().sendSuccess(message, true);
+					Component message = Component.literal("Found target; loading now");
+					cmdCtx.getSource().sendSuccess(() -> message, true);
 					p.teleportTo(dst.getFirst().getX(), srcpos.getY(), dst.getFirst().getZ());
 					Holder.Reference<ConfiguredStructureFeature<?, ?>> targetf = target;
+
 					ResourceOrTagLocationArgument.Result<ConfiguredStructureFeature<?, ?>> thing = new Result<ConfiguredStructureFeature<?, ?>>() {
 
 						@Override
