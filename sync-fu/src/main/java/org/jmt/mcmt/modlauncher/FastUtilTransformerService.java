@@ -210,12 +210,12 @@ public class FastUtilTransformerService implements ITransformer<ClassNode>, ITra
 			// Make thread sit dead
 			//Thread.currentThread().setDaemon(true);
 			Thread.currentThread().setUncaughtExceptionHandler((t, e) -> {});
-			throw new Error("KILLING TO AVOID REBOOT");
+			throw new Error("KILLING TO AVOID REBOOT 1");
 			//BootstrapLauncher.main();
 		} catch (Exception t) {
 			t.printStackTrace();
 			Thread.currentThread().setUncaughtExceptionHandler((thr, e) -> {});
-			throw new Error("KILLING TO AVOID REBOOT");
+			throw new Error("KILLING TO AVOID REBOOT 2");
 		}
 	}
 	
