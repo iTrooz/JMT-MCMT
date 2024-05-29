@@ -37,7 +37,7 @@ public class FastUtilLocator implements IModLocator {
 	private boolean isActive = true;
 	
 	@Override
-	public List<IModFile> scanMods() {
+	public List<ModFileOrException> scanMods() {
 		LOGGER.info("Sync_Fu preparing...");
 		LOGGER.info("Prepping fu_add...");
 		Optional<URL> fujarurl = Arrays.stream(System.getProperty("java.class.path").split(File.pathSeparator)).flatMap(path -> {
@@ -69,7 +69,7 @@ public class FastUtilLocator implements IModLocator {
 			return null;
 		}
 		final URL rootURLf = rootUrl;
-		List<IModFile> imf = new ArrayList<IModFile>();
+		List<ModFileOrException> imf = new ArrayList<ModFileOrException>();
 		try {
 			Path path = Paths.get(rootURLf.toURI());
 			Supplier<Manifest> manifestGen = () -> {
@@ -105,10 +105,10 @@ public class FastUtilLocator implements IModLocator {
 				return out;
 			};
 			SecureJar sj = SecureJar.from(manifestGen, modulehack, path);
-			sj.getManifest().getMainAttributes().putValue("FMLModType", "GAMELIBRARY");
+//			sj.getManifest().getMainAttributes().putValue("FMLModType", "GAMELIBRARY");
 			ModFile mf = new ModFile(sj, this, FastUtilLocator::modfileinfoinator);
 			System.out.println("SUPERTEST9001 TEST:" + mf.getType());
-			imf.add(mf);
+			imf.add(new ModFileOrException(mf, null));
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 		}
